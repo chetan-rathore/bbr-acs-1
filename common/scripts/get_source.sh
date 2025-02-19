@@ -32,9 +32,10 @@ get_cross_compiler()
         TAG=aarch64-none-linux-gnu
         mkdir -p tools
         pushd $TOP_DIR/tools
-        wget $CROSS_COMPILER_URL
-        tar -xf gcc-arm-${GCC_TOOLS_VERSION}-x86_64-${TAG}.tar.xz
-        rm gcc-arm-${GCC_TOOLS_VERSION}-x86_64-${TAG}.tar.xz
+	wget $CROSS_COMPILER_URL --no-check-certificate
+        tar -xf arm-gnu-toolchain-${GCC_TOOLS_VERSION}-x86_64-${TAG}.tar.xz
+	mv arm-gnu-toolchain-13.2.Rel1-x86_64-aarch64-none-linux-gnu arm-gnu-toolchain-13.2.rel1-x86_64-aarch64-none-linux-gnu
+        rm arm-gnu-toolchain-${GCC_TOOLS_VERSION}-x86_64-${TAG}.tar.xz
         popd
     fi
 }

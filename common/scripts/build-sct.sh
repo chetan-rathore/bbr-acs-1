@@ -87,6 +87,9 @@ echo "Build type: $BUILD_TYPE"
 
 SBBR_TEST_DIR=$BBR_DIR/common/sct-tests/sbbr-tests
 BBSR_TEST_DIR=$BBR_DIR/bbsr/sct-tests
+
+# Comment the BBSR test from BBR_SCT.dsc file for standalone build
+
 if [[ $BUILD_TYPE = S ]]; then
     sed -i 's|SctPkg/TestCase/UEFI/EFI/RuntimeServices/SecureBoot/BlackBoxTest/SecureBootBBTest.inf|#SctPkg/TestCase/UEFI/EFI/RuntimeServices/SecureBoot/BlackBoxTest/SecureBootBBTest.inf|g' $BBR_DIR/common/sct-tests/sbbr-tests/BBR_SCT.dsc
     sed -i 's|SctPkg/TestCase/UEFI/EFI/RuntimeServices/BBSRVariableSizeTest/BlackBoxTest/BBSRVariableSizeBBTest.inf|#SctPkg/TestCase/UEFI/EFI/RuntimeServices/BBSRVariableSizeTest/BlackBoxTest/BBSRVariableSizeBBTest.inf|g' $BBR_DIR/common/sct-tests/sbbr-tests/BBR_SCT.dsc
@@ -97,74 +100,77 @@ sed -i \
 's|SctPkg/TestCase/UEFI/EFI/Generic/PlatformResetAttackMitigationPsciTest/BlackBoxTest/PlatformResetAttackMitigationPsciBBTest.inf|#SctPkg/TestCase/UEFI/EFI/Generic/PlatformResetAttackMitigationPsciTest/BlackBoxTest/PlatformResetAttackMitigationPsciBBTest.inf|g' $BBR_DIR/common/sct-tests/sbbr-tests/BBR_SCT.dsc
 fi
 
-do_build()
-{
-    pushd $TOP_DIR/$SCT_PATH
-    export KEYS_DIR=$TOP_DIR/bbsr-keys
-    export EDK2_TOOLCHAIN=$UEFI_TOOLCHAIN
 
-    # required for BBSR keys generation
-    export PATH="$PATH:$TOP_DIR/efitools"
+do_build() {
 
-    # export EDK2 enviromnent variables
     export PACKAGES_PATH=$TOP_DIR/$UEFI_PATH
     export PYTHON_COMMAND=/usr/bin/python3
     export WORKSPACE=$TOP_DIR/$SCT_PATH/uefi-sct
-    #export HOST_ARCH = `uname -m`
-    #MACHINE=`uname -m`
-    #Build base tools
-    source $TOP_DIR/$UEFI_PATH/edksetup.sh
-    make -C $TOP_DIR/$UEFI_PATH/BaseTools
-    #Copy over extra files needed for SBBR tests
+    export EDK2_TOOLCHAIN=$UEFI_TOOLCHAIN
 
-    cp -r $SBBR_TEST_DIR/SbbrBootServices uefi-sct/SctPkg/TestCase/UEFI/EFI/BootServices/
-    cp -r $SBBR_TEST_DIR/SbbrEfiSpecVerLvl $SBBR_TEST_DIR/SbbrRequiredUefiProtocols $SBBR_TEST_DIR/SbbrSysEnvConfig uefi-sct/SctPkg/TestCase/UEFI/EFI/Generic/
-    cp $SBBR_TEST_DIR/BBR_SCT.dsc uefi-sct/SctPkg/UEFI/
-    cp $SBBR_TEST_DIR/build_bbr.sh uefi-sct/SctPkg/
-
-    # copy BBSR SCT tests to edk2-test
+    # required for BBSR keys generation
     if [[ $BUILD_TYPE != S ]]; then
-        cp -r $BBSR_TEST_DIR/BBSRVariableSizeTest uefi-sct/SctPkg/TestCase/UEFI/EFI/RuntimeServices
-        cp -r $BBSR_TEST_DIR/SecureBoot uefi-sct/SctPkg/TestCase/UEFI/EFI/RuntimeServices
-        cp -r $BBSR_TEST_DIR/PlatformResetAttackMitigationPsciTest \
-        uefi-sct/SctPkg/TestCase/UEFI/EFI/Generic/
+        export KEYS_DIR=$TOP_DIR/bbsr-keys
+        export PATH="$PATH:$TOP_DIR/efitools"
     fi
 
-    #Startup/runtime files.
+    pushd $TOP_DIR/$SCT_PATH
+
+    # Build base tools
+    source $TOP_DIR/$UEFI_PATH/edksetup.sh
+    make -C $TOP_DIR/$UEFI_PATH/BaseTools
+
+    # Copy over extra files needed for SBBR tests
+    cp -r $SBBR_TEST_DIR/SbbrBootServices          uefi-sct/SctPkg/TestCase/UEFI/EFI/BootServices/
+    cp -r $SBBR_TEST_DIR/SbbrEfiSpecVerLvl         uefi-sct/SctPkg/TestCase/UEFI/EFI/Generic/
+    cp -r $SBBR_TEST_DIR/SbbrRequiredUefiProtocols uefi-sct/SctPkg/TestCase/UEFI/EFI/Generic/ 
+    cp -r $SBBR_TEST_DIR/SbbrSysEnvConfig          uefi-sct/SctPkg/TestCase/UEFI/EFI/Generic/
+    cp $SBBR_TEST_DIR/BBR_SCT.dsc                  uefi-sct/SctPkg/UEFI/
+    cp $SBBR_TEST_DIR/build_bbr.sh                 uefi-sct/SctPkg/
+
+    # Copy BBSR SCT tests to edk2-test
+    if [[ $BUILD_TYPE != S ]]; then
+        cp -r $BBSR_TEST_DIR/BBSRVariableSizeTest                  uefi-sct/SctPkg/TestCase/UEFI/EFI/RuntimeServices/
+        cp -r $BBSR_TEST_DIR/SecureBoot                            uefi-sct/SctPkg/TestCase/UEFI/EFI/RuntimeServices/
+        cp -r $BBSR_TEST_DIR/PlatformResetAttackMitigationPsciTest uefi-sct/SctPkg/TestCase/UEFI/EFI/Generic/
+    fi
+
+    # Startup/runtime files.
     mkdir -p uefi-sct/SctPkg/BBR
+
+    if [ $BUILD_PLAT = EBBR ]; then
+        cp $BBR_DIR/ebbr/config/EBBRStartup.nsh       uefi-sct/SctPkg/BBR/
+        cp $BBR_DIR/ebbr/config/EBBR.seq              uefi-sct/SctPkg/BBR/
+        cp $BBR_DIR/ebbr/config/EBBR_manual.seq       uefi-sct/SctPkg/BBR/
+        cp $BBR_DIR/ebbr/config/EBBR_extd_run.seq     uefi-sct/SctPkg/BBR/
+        cp $BBR_DIR/ebbr/config/EfiCompliant_EBBR.ini uefi-sct/SctPkg/BBR/
+    elif [ $BUILD_PLAT = SBBR ]; then
+        cp $BBR_DIR/sbbr/config/SBBRStartup.nsh       uefi-sct/SctPkg/BBR/
+        cp $BBR_DIR/sbbr/config/SBBR.seq              uefi-sct/SctPkg/BBR/
+        cp $BBR_DIR/sbbr/config/SBBR_manual.seq       uefi-sct/SctPkg/BBR/
+        cp $BBR_DIR/sbbr/config/SBBR_extd_run.seq     uefi-sct/SctPkg/BBR/
+        cp $BBR_DIR/sbbr/config/EfiCompliant_SBBR.ini uefi-sct/SctPkg/BBR/
+    fi
+
+    #Common - SCRT
+    cp $BBR_DIR/common/config/ScrtStartup.nsh uefi-sct/SctPkg/BBR/
+    cp $BBR_DIR/common/config/SCRT.conf       uefi-sct/SctPkg/BBR/
+
     # undo any previously applied patches on edk2-test
     git checkout .
 
-    if [ $BUILD_PLAT = EBBR ]; then
-        #EBBR
-        cp $BBR_DIR/ebbr/config/EBBRStartup.nsh uefi-sct/SctPkg/BBR/
-        cp $BBR_DIR/ebbr/config/EBBR.seq uefi-sct/SctPkg/BBR/
-        cp $BBR_DIR/ebbr/config/EBBR_manual.seq uefi-sct/SctPkg/BBR/
-        cp $BBR_DIR/ebbr/config/EBBR_extd_run.seq uefi-sct/SctPkg/BBR/
-        cp $BBR_DIR/ebbr/config/EfiCompliant_EBBR.ini uefi-sct/SctPkg/BBR/
-    elif [ $BUILD_PLAT = SBBR ]; then
-    #SBBR
-        cp $BBR_DIR/sbbr/config/SBBRStartup.nsh uefi-sct/SctPkg/BBR/
-        cp $BBR_DIR/sbbr/config/SBBR.seq uefi-sct/SctPkg/BBR/
-        cp $BBR_DIR/sbbr/config/SBBR_manual.seq uefi-sct/SctPkg/BBR/
-        cp $BBR_DIR/sbbr/config/SBBR_extd_run.seq uefi-sct/SctPkg/BBR/
-        cp $BBR_DIR/sbbr/config/EfiCompliant_SBBR.ini  uefi-sct/SctPkg/BBR/
-        if [[ $BUILD_TYPE != S ]]; then
-        if git apply --check $TOP_DIR/patches/sctversion.patch; then
-                echo "Applying edk2-test BBR sctversion patch..."
-                git apply --ignore-whitespace --ignore-space-change $TOP_DIR/patches/sctversion.patch
-            else
-                echo  "Error while applying edk2-test BBR sctversion patch..."
-                exit
-            fi
+    # Apply sct version patch for systemready build
+    if [[ $BUILD_TYPE != S ]]; then
+  	if git apply --check $TOP_DIR/patches/sctversion.patch; then
+            echo "Applying edk2-test BBR sctversion patch..."
+            git apply --ignore-whitespace --ignore-space-change $TOP_DIR/patches/sctversion.patch
+        else
+            echo  "Error while applying edk2-test BBR sctversion patch..."
+            exit
         fi
     fi
-    #Common
-    #SCRT
-    cp $BBR_DIR/common/config/ScrtStartup.nsh uefi-sct/SctPkg/BBR/
-    cp $BBR_DIR/common/config/SCRT.conf uefi-sct/SctPkg/BBR/
 
-    # apply version patches for standalone BBR builds
+    # Apply EBBR version patches for standalone BBR builds
     if [[ $BUILD_TYPE = S ]]; then
         if [ $BUILD_PLAT = EBBR ]; then
             if git apply --check $BBR_DIR/ebbr/patches/standalone_ebbr_ver.patch; then
@@ -185,6 +191,7 @@ do_build()
         fi
     fi
 
+    # Apply edk2-test-bbr-build.patch
     if git apply --check $BBR_DIR/common/patches/edk2-test-bbr-build.patch; then
         echo "Applying edk2-test BBR build patch..."
         git apply --ignore-whitespace --ignore-space-change $BBR_DIR/common/patches/edk2-test-bbr-build.patch
@@ -199,6 +206,8 @@ do_build()
         echo  "Error while applying edk2-test BBR patch..."
         exit
     fi
+
+    # Apply BBSR patch for systemready builds only
     if [[ $BUILD_TYPE != S ]]; then
         if git apply --check $BBR_DIR/bbsr/patches/0001-BBSR-Patch-for-UEFI-SCT-Build.patch; then
             echo "Applying BBSR SCT patch..."
@@ -212,18 +221,21 @@ do_build()
     pushd uefi-sct
     ./SctPkg/build_bbr.sh $TARGET_ARCH GCC $UEFI_BUILD_MODE  -n $PARALLELISM
     popd
+    popd
 }
 
-do_clean()
-{
+do_clean() {
+    export PACKAGES_PATH=$TOP_DIR/$UEFI_PATH
+    export PYTHON_COMMAND=/usr/bin/python3
+    export WORKSPACE=$TOP_DIR/$SCT_PATH/uefi-sct
+    export EDK2_TOOLCHAIN=$UEFI_TOOLCHAIN
+ 
     pushd $TOP_DIR/$SCT_PATH/uefi-sct
     source $TOP_DIR/$UEFI_PATH/edksetup.sh
     make -C $TOP_DIR/$UEFI_PATH/BaseTools clean
     rm -rf Build
     rm -rf ${TARGET_ARCH}_SCT
-
     popd
-
 }
 
 # sign SCT efi files
@@ -248,8 +260,7 @@ SecureBootSignDependency() {
     done
 }
 
-do_package ()
-{
+do_package () {
     echo "Packaging sct... $VARIANT";
     # Copy binaries to output folder
     pushd $TOP_DIR/$SCT_PATH/uefi-sct
@@ -259,12 +270,10 @@ do_package ()
     mkdir -p ${TARGET_ARCH}_SCT/SCT/Sequence
 
     if [ $BUILD_PLAT = EBBR ]; then
-        #EBBR
         cp -r Build/bbrSct/${UEFI_BUILD_MODE}_${UEFI_TOOLCHAIN}/SctPackage${TARGET_ARCH}/${TARGET_ARCH}/* ${TARGET_ARCH}_SCT/SCT/
         cp Build/bbrSct/${UEFI_BUILD_MODE}_${UEFI_TOOLCHAIN}/SctPackage${TARGET_ARCH}/EBBRStartup.nsh ${TARGET_ARCH}_SCT/SctStartup.nsh
         cp SctPkg/BBR/EfiCompliant_EBBR.ini ${TARGET_ARCH}_SCT/SCT/Dependency/EfiCompliantBBTest/EfiCompliant.ini
         cp SctPkg/BBR/EBBR_manual.seq ${TARGET_ARCH}_SCT/SCT/Sequence/EBBR_manual.seq
-
     elif [ $BUILD_PLAT = SBBR ]; then
         # Sign the SCT binaries
         if [ $BUILD_TYPE != S ]; then
@@ -284,7 +293,6 @@ do_package ()
             cp $BBR_DIR/bbsr/config/BBSRStartup.nsh ${TARGET_ARCH}_SCT/bbsr_SctStartup.nsh
             cp $BBR_DIR/bbsr/config/BBSR.seq  ${TARGET_ARCH}_SCT/SCT/Sequence/
         fi
-        #SBBR
         cp -r Build/bbrSct/${UEFI_BUILD_MODE}_${UEFI_TOOLCHAIN}/SctPackage${TARGET_ARCH}/${TARGET_ARCH}/* ${TARGET_ARCH}_SCT/SCT/
         cp Build/bbrSct/${UEFI_BUILD_MODE}_${UEFI_TOOLCHAIN}/SctPackage${TARGET_ARCH}/SBBRStartup.nsh ${TARGET_ARCH}_SCT/SctStartup.nsh
         cp SctPkg/BBR/EfiCompliant_SBBR.ini ${TARGET_ARCH}_SCT/SCT/Dependency/EfiCompliantBBTest/EfiCompliant.ini
@@ -295,13 +303,11 @@ do_package ()
          exit
     fi
 
-    #Common
-    #SCRT
+    #Common - SCRT
     cp SctPkg/BBR/ScrtStartup.nsh ${TARGET_ARCH}_SCT/ScrtStartup.nsh
     cp SctPkg/BBR/SCRT.conf ${TARGET_ARCH}_SCT/SCT/SCRT/SCRT.conf
 
     pushd $TOP_DIR
-
 }
 
 DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )

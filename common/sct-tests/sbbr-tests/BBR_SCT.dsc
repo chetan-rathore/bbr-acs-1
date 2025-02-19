@@ -78,8 +78,8 @@
   BUILD_TARGETS                  = DEBUG|RELEASE
   SKUID_IDENTIFIER               = DEFAULT
 
-  DEFINE GCC_VER_MACRO           = -D EFI_SPECIFICATION_VERSION=0x00020028 -D TIANO_RELEASE_VERSION=0x00080006
-  DEFINE MSFT_VER_MACRO          = /D EFI_SPECIFICATION_VERSION=0x00020028 /D TIANO_RELEASE_VERSION=0x00080006
+  DEFINE GCC_VER_MACRO           =
+  DEFINE MSFT_VER_MACRO          =
 
 
 ################################################################################
@@ -106,16 +106,8 @@
   SctPkg/Library/SctLib/SctLib.inf
   SctPkg/Library/SctGuidLib/SctGuidLib.inf
   SctPkg/Library/EfiTestLib/EfiTestLib.inf
-
   SctPkg/TestInfrastructure/SCT/Framework/ENTS/EasLib/EntsLib.inf
-
   MdePkg/Library/BaseDebugLibNull/BaseDebugLibNull.inf
-
-[Libraries.ARM]
-  ArmPkg/Library/CompilerIntrinsicsLib/CompilerIntrinsicsLib.inf
-
-[Libraries.AARCH64]
-  ArmPkg/Library/CompilerIntrinsicsLib/CompilerIntrinsicsLib.inf
 
 [LibraryClasses.common]
   UefiApplicationEntryPoint|MdePkg/Library/UefiApplicationEntryPoint/UefiApplicationEntryPoint.inf
@@ -139,11 +131,7 @@
   EasLib|SctPkg/TestInfrastructure/SCT/Framework/ENTS/EasDispatcher/Eas.inf
   EfiTestLib|SctPkg/Library/EfiTestLib/EfiTestLib.inf
 
-[LibraryClasses.ARM]
-  NULL|ArmPkg/Library/CompilerIntrinsicsLib/CompilerIntrinsicsLib.inf
-
 [LibraryClasses.AARCH64]
-  NULL|ArmPkg/Library/CompilerIntrinsicsLib/CompilerIntrinsicsLib.inf
   ArmLib|ArmPkg/Library/ArmLib/ArmBaseLib.inf
   ArmSmcLib|ArmPkg/Library/ArmSmcLib/ArmSmcLib.inf
 
