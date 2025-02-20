@@ -217,6 +217,10 @@ do_build()
 do_clean()
 {
     pushd $TOP_DIR/$SCT_PATH/uefi-sct
+    export PACKAGES_PATH=$TOP_DIR/$UEFI_PATH
+    export PYTHON_COMMAND=/usr/bin/python3
+    export WORKSPACE=$TOP_DIR/$SCT_PATH/uefi-sct
+
     source $TOP_DIR/$UEFI_PATH/edksetup.sh
     make -C $TOP_DIR/$UEFI_PATH/BaseTools clean
     rm -rf Build
