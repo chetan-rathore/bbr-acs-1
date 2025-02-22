@@ -78,8 +78,8 @@
   BUILD_TARGETS                  = DEBUG|RELEASE
   SKUID_IDENTIFIER               = DEFAULT
 
-  DEFINE GCC_VER_MACRO           = -D EFI_SPECIFICATION_VERSION=0x00020028 -D TIANO_RELEASE_VERSION=0x00080006
-  DEFINE MSFT_VER_MACRO          = /D EFI_SPECIFICATION_VERSION=0x00020028 /D TIANO_RELEASE_VERSION=0x00080006
+  DEFINE GCC_VER_MACRO           = 
+  DEFINE MSFT_VER_MACRO          = 
 
 
 ################################################################################
@@ -92,7 +92,7 @@
   0|DEFAULT              # The entry: 0|DEFAULT is reserved and always required.
 
 [BuildOptions]
-  *_*_AARCH64_CC_FLAGS         = -D EFIAARCH64 -I$(WORKSPACE)/MdePkg/Include/AArch64 $(GCC_VER_MACRO)
+  *_*_AARCH64_CC_FLAGS         = -D EFIAARCH64 $(GCC_VER_MACRO)
   GCC:*_*_AARCH64_CC_FLAGS     = -D EFIAARCH64 $(GCC_VER_MACRO) -ffreestanding -nostdinc -nostdlib -Wno-error=unused-function -Wno-error=unused-but-set-variable -Wno-error
   *_*_AARCH64_VFRPP_FLAGS      = -D EFIAARCH64 $(GCC_VER_MACRO)
   *_*_AARCH64_APP_FLAGS        = -D EFIAARCH64 $(GCC_VER_MACRO)
@@ -104,12 +104,13 @@
 
 [Libraries]
   SctPkg/Library/SctLib/SctLib.inf
-  SctPkg/Library/SctGuidLib/SctGuidLib.inf
   SctPkg/Library/EfiTestLib/EfiTestLib.inf
 
   SctPkg/TestInfrastructure/SCT/Framework/ENTS/EasLib/EntsLib.inf
 
   MdePkg/Library/BaseDebugLibNull/BaseDebugLibNull.inf
+
+!include MdePkg/MdeLibs.dsc.inc
 
 
 [LibraryClasses.common]
