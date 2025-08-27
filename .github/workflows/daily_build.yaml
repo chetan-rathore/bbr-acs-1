@@ -87,3 +87,34 @@ jobs:
           echo "CapsuleApp.efi not found for SBBR, raising an error."
           exit 1
         fi
+    - name: Get required source codes and tools for Standalone FWTS
+      run: |
+        cd $GITHUB_WORKSPACE  # Go back to the root directory of the repository
+    - name: Build FWTS
+      run: |
+        cd bbr-acs
+        ./common/scripts/build-standalone-fwts.sh
+    - name: Check for FWTS outout
+      run: |
+        if [ ! -e "bbr-acs/fwts_workspace/buildroot/output/target/usr/bin/fwts" ]; then
+          echo "FWTS bin not found, raising an error."
+          exit 1
+        else
+          cd bbr-acs/fwts_workspace/
+          mkdir -p fwts/bin
+          cp buildroot/output/target/usr/bin/fwts fwts/bin
+          mkdir -p fwts/lib
+          mkdir -p fwts/lib64
+          mkdir -p fwts/share
+          cp -r buildroot/output/target/usr/lib64/fwts/ fwts/lib64
+          cp -r buildroot/output/target/usr/lib/fwts/ fwts/lib
+          cp -r buildroot/output/target/usr/share/fwts/ fwts/share   
+          zip FWTS.zip fwts/*
+          cd -
+        fi
+    - name: Save FWTS.zip as an artifact
+      uses: actions/upload-artifact@v4
+      with:
+          name: FWTS.zip
+          path: bbr-acs/fwts_workspace/FWTS.zip
+          if-no-files-found: error
