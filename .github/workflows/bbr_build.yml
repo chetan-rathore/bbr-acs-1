@@ -46,7 +46,7 @@ jobs:
           echo "AARCH64_SCT not found for EBBR, raising an error."
           exit 1
         else
-          cd edk2-test/uefi-sct/AARCH64_SCT
+          cd bbr-acs/ebbr/scripts/edk2-test/uefi-sct/AARCH64_SCT
           zip EBBR.zip *
           cd -
         fi
@@ -77,7 +77,7 @@ jobs:
           echo "AARCH64_SCT not found for SBBR, raising an error."
           exit 1
         else
-          cd edk2-test/uefi-sct/AARCH64_SCT
+          cd bbr-acs/sbbr/scripts/edk2-test/uefi-sct/AARCH64_SCT
           zip SBBR.zip *
           cd -
         fi
