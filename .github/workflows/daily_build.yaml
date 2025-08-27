@@ -41,7 +41,7 @@ jobs:
           exit 1
         else
           cd bbr-acs/ebbr/scripts/edk2-test/uefi-sct/AARCH64_SCT
-          zip -r EBBR.zip .
+          zip -r EBBR.zip . -x EBBR.zip
           cd -
         fi
     - name: Save EBBR.zip as an artifact
@@ -72,7 +72,7 @@ jobs:
           exit 1
         else
           cd bbr-acs/sbbr/scripts/edk2-test/uefi-sct/AARCH64_SCT
-          zip -r SBBR.zip .
+          zip -r SBBR.zip . -x SBBR.zip
           cd -
         fi
     - name: Save SBBR.zip as an artifact
@@ -106,10 +106,10 @@ jobs:
           mkdir -p fwts/lib
           mkdir -p fwts/lib64
           mkdir -p fwts/share
-          cp -r buildroot/output/target/usr/lib64/fwts/ fwts/lib64
-          cp -r buildroot/output/target/usr/lib/fwts/ fwts/lib
-          cp -r buildroot/output/target/usr/share/fwts/ fwts/share   
-          zip -r FWTS.zip fwts/*
+          cp -r buildroot/output/target/usr/lib64/fwts/* fwts/lib64
+          cp -r buildroot/output/target/usr/lib/fwts/* fwts/lib
+          cp -r buildroot/output/target/usr/share/fwts/* fwts/share   
+          zip -r FWTS.zip fwts/* -x FWTS.zip
           cd -
         fi
     - name: Save FWTS.zip as an artifact
