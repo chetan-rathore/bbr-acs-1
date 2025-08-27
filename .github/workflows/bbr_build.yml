@@ -52,7 +52,7 @@ jobs:
         fi
     - name: Save EBBR.zip as an artifact
       uses: actions/upload-artifact@v4
-        with:
+      with:
           name: EBBR.zip
           path: edk2-test/uefi-sct/AARCH64_SCT/EBBR.zip
           if-no-files-found: error   
@@ -83,7 +83,7 @@ jobs:
         fi
     - name: Save SBBR.zip as an artifact
       uses: actions/upload-artifact@v4
-        with:
+      with:
           name: SBBR.zip
           path: edk2-test/uefi-sct/AARCH64_SCT/SBBR.zip
           if-no-files-found: error   
